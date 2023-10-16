@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'chat.apps.ChatConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -69,7 +71,18 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ChatApplication.wsgi.application'
+# WSGI_APPLICATION = 'ChatApplication.wsgi.application'
+ASGI_APPLICATION = "ChatApplication.asgi.application"
+
+#Channels-redis
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -124,7 +137,6 @@ STATICFILES_DIRS = [
 ]
 
 # STATIC_ROOT = "/var/www/example.com/static/"
-
 
 
 # Default primary key field type

@@ -70,11 +70,12 @@
                             <tr>
                                 {% comment %} <td><img src="{% static 'assets/dp.png' %}" alt="" class="profile-image rounded-circle">
                                 </td> {% endcomment %}
-                                {% if user.userprofilemodel.online_status %}
-                                <td><a style="color: green" id="{{user.username}}_status" href="">{{user.username}}</a></td>
+                                <td><a style="color: green" id="{{user.username}}_status" href="{% url 'chat' username=user.username %}">{{user.username}}</a></td>
+                                {% comment %} {% if user.userprofilemodel.online_status %}
+                                <td><a style="color: green" id="{{user.username}}_status" href="{% url 'chat' username=user.username %}">{{user.username}}</a></td>
                                 {% else %}
-                                <td><a style="color: grey" id="{{user.username}}_status" href="">{{user.username}}</a></td>
-                                {% endif %}
+                                <td><a style="color: grey" id="{{user.username}}_status" href="{% url 'chat' username=user.username %}">{{user.username}}</a></td>
+                                {% endif %} {% endcomment %}
                             </tr>
                             {% endfor %}
 
@@ -164,6 +165,6 @@
 {% endblock %}
 {% block javascript %}
 <script src="{% static 'js/chat.js' %}"></script>
-<script src="{% static 'js/online_status.js' %}"></script>
-<script src="{% static 'js/notify.js' %}"></script>
+{% comment %} <script src="{% static 'js/online_status.js' %}"></script>
+<script src="{% static 'js/notify.js' %}"></script> {% endcomment %}
 {% endblock %}
