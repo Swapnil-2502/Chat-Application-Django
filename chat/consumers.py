@@ -1,7 +1,8 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from chat.models import ChatModel
+from chat.models import ChatModel, Userprofilemodel
+from django.contrib.auth.models import User
 
 class ChatConsumer(AsyncWebsocketConsumer):
     
@@ -19,12 +20,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
         self.room_group_name = 'chat_%s' % self.room_name
         
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name,)
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
         # await self.send(text_data=self.room_group_name)
         
     async def disconnect(self, code):
-         self.channel_layer.group_discard(self.room_group_name, self.channel_layer,)
+         self.channel_layer.group_discard(self.room_group_name, self.channel_layer)
         
     
     async def receive(self, text_data=None, bytes_data=None):
@@ -57,3 +58,43 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def save_message(self, username, thread_name ,message):
         ChatModel.objects.create(sender=username,message=message,thread_name=thread_name)
         
+class OnlineStatusConsumer(AsyncWebsocketConsumer):
+    
+    async def connect(self):
+        self.room_group_name = 'user'
+        
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+        
+    
+    async def receive(self, text_data=None, bytes_data=None):
+        data = json.loads(text_data)
+        username = data['username']
+        connection_type = data['type']
+        print(connection_type)
+        await self.change_status(username,connection_type)
+        
+    async def send_onlineStatus(self, event):
+        data = json.loads(event.get('value'))
+        username = data['username']
+        online_status = data['status']
+        
+        await self.send(text_data=json.dumps({
+            'username': username,
+            'online_status': online_status
+        }))
+        
+    async def disconnect(self, message):
+        self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        
+    @database_sync_to_async
+    def change_status(self, username, connection_type):
+        user = User.objects.get(username=username)
+        userProfile = Userprofilemodel.objects.get(user=user)
+        
+        if connection_type == 'open':
+            userProfile.online_status = True
+            userProfile.save()
+        else:
+            userProfile.online_status = False
+            userProfile.save()
